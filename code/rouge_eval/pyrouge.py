@@ -24,6 +24,7 @@ rouge = Rouge()
 rouge_r = []
 rouge_p = []
 rouge_l = []
+
 for i, j in zip(f2, question):
  
     rouge_score = rouge.get_scores(i, j['Q'])
@@ -34,6 +35,11 @@ for i, j in zip(f2, question):
     rouge_r.append(k['r'])
     rouge_p.append(k['p'])
     
+#     w = {'txt':j['text'],
+#         'ans':j['A'],
+#         'tgt':j['Q'],
+#         'prd',i,
+#         'score',k}
     print('txt:',j['text'])
     print('ans:',j['A'])
     print('-')

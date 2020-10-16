@@ -11,12 +11,12 @@ python -u run_maskLeftRightLM.py --data_dir ../data   \
         --do_lower_case  \
         --train_batch_size 32   \
         --model_recover_path ../user_data/pretrain/pytorch_model.bin \
-	--mask_prob 0.35 \
+	--mask_prob 0.4 \
 	--mask_source_words \
-	--skipgram_size 3 \
+	--skipgram_size 4 \
 	--skipgram_prb 0.2 \
 	--warmup_proportion 0.05 \
-        --num_train_epochs 25  \
+        --num_train_epochs 30  \
         --mask_prob 0.5 \
         --max_pred 40 \
         --learning_rate 5e-5
