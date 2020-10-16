@@ -258,13 +258,30 @@ class Pipeline():
 #    so that the "next sentence prediction" task doesn't span between documents.
 
 
+def truncate_paragraph(tokens):
+    sep_index = tokens.index('[SEP]')
+    sentence_a, sentence_b = tokens[:sep_index], tokens[sep_index:]
+    if len(sentence_a)>len(sentence_b):
+        sentence_a = sentence_a[:-1]
+    else:
+        sentence_b = sentence_b[:-1]
+    tokens = sentence_a+sentence_b
+    return tokens
+
+
 def truncate_tokens_pair(tokens_a, tokens_b, max_len):
     if len(tokens_a) + len(tokens_b) > max_len - 3:
         while len(tokens_a) + len(tokens_b) > max_len - 3:
             if len(tokens_a) > len(tokens_b):
-                tokens_a = tokens_a[:-1]
+                if '[SEP]' in tokens_a:
+                    tokens_a = truncate_paragraph(tokens_a)
+                else:
+                    tokens_a = tokens_a[:-1]
             else:
-                tokens_b = tokens_b[:-1]
+                if '[SEP]' in tokens_b:
+                    tokens_b = truncate_paragraph(tokens_b)
+                else:
+                    tokens_b = tokens_b[:-1]
     return tokens_a, tokens_b
 
 
@@ -319,9 +336,9 @@ class LRDataset(torch.utils.data.Dataset):
         # exit()
 
     def read_data(self, line):
-        text = line['text'].replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲', '')
+        text = line['text'].replace(" ","").replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲', '')
 
-        answer = line['anwser'].replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲',
+        answer = line['anwser'].replace(" ","").replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲',
                                                                                                                  '')
 
         return text, answer
@@ -387,11 +404,11 @@ class Seq2SeqDataset(torch.utils.data.Dataset):
         # tgt_tk = sample["tgt_txt"]
 
         id = line['id']
-        text = line['text'].replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲', '')
-        question = [i['Q'].replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲', '') for
+        text = line['text'].replace(" ",'').replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲', '')
+        question = [i['Q'].replace(" ","").replace("\\n", '').replace('\n', '').replace('\t', '').replace("\\",'').replace('▲', '') for
                     i in
                     line['annotations']]
-        answer = [i['A'].replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲', '') for i
+        answer = [i['A'].replace(" ",'').replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲', '') for i
                   in
                   line['annotations']]
         tk = []
