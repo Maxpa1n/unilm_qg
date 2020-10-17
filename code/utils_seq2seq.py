@@ -392,6 +392,7 @@ class Seq2SeqDataset(torch.utils.data.Dataset):
             for j in i:
                 text, answer = j[0].split('[SEP]')
                 question = j[1]
+                #self.ex_list.append((text+'[SEP]'+question,answer))
                 self.ex_list.append(sentence_split(text, question, answer))
         print('Load {0} documents'.format(len(self.ex_list)))
         # exit()
