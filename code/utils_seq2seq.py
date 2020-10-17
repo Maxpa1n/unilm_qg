@@ -55,8 +55,8 @@ def sentence_split(text, question, answer):
 def sentence_split_ta(text, answer):
     wordlist = re.split(r'([。；？！：])', text)
     wordlist = ["".join(i) for i in zip(wordlist[0::2], wordlist[1::2])]
-    if len(wordlist)<=3:
-        return text+'[SEP]'+answer
+    if len(wordlist) <= 3:
+        return text + '[SEP]' + answer
     first_and_text = [wordlist[0]]
     for k, j in enumerate(wordlist):
         if answer in j or j in answer:
@@ -261,11 +261,11 @@ class Pipeline():
 def truncate_paragraph(tokens):
     sep_index = tokens.index('[SEP]')
     sentence_a, sentence_b = tokens[:sep_index], tokens[sep_index:]
-    if len(sentence_a)>len(sentence_b):
+    if len(sentence_a) > len(sentence_b):
         sentence_a = sentence_a[:-1]
     else:
         sentence_b = sentence_b[:-1]
-    tokens = sentence_a+sentence_b
+    tokens = sentence_a + sentence_b
     return tokens
 
 
@@ -336,10 +336,14 @@ class LRDataset(torch.utils.data.Dataset):
         # exit()
 
     def read_data(self, line):
-        text = line['text'].replace(" ","").replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲', '')
+        text = line['text'].replace(" ", "").replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\',
+                                                                                                            '').replace(
+            '▲', '')
 
-        answer = line['anwser'].replace(" ","").replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲',
-                                                                                                                 '')
+        answer = line['anwser'].replace(" ", "").replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\',
+                                                                                                                '').replace(
+            '▲',
+            '')
 
         return text, answer
 
@@ -351,7 +355,6 @@ class LRDataset(torch.utils.data.Dataset):
         proc = choice(self.bi_uni_pipeline)
         new_instance = proc(instance)
         return new_instance
-
 
 
 class Seq2SeqDataset(torch.utils.data.Dataset):
@@ -385,17 +388,14 @@ class Seq2SeqDataset(torch.utils.data.Dataset):
                     desc="convert squad examples to features",
                 )
             )
-        # fin = open("look_new.json", "w",encoding="utf-8")
-        # for jj, m in enumerate(self.ex_list):
-        #     fin.write(str(jj)+"\t"+str(m)+"\n")
+
         for i in data_list:
             for j in i:
-                text, answer = j[0].split('[SEP]')
-                question = j[1]
-                self.ex_list.append((text+'[SEP]'+answer,question))
+                text, answer, question = j
+                self.ex_list.append((text, answer, question))
                 # self.ex_list.append(sentence_split(text, question, answer))
         print('Load {0} documents'.format(len(self.ex_list)))
-        # exit()
+
 
     def read_data(self, line, tokenizer):
         # sample = eval(line.strip())
@@ -405,16 +405,22 @@ class Seq2SeqDataset(torch.utils.data.Dataset):
         # tgt_tk = sample["tgt_txt"]
 
         id = line['id']
-        text = line['text'].replace(" ",'').replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲', '')
-        question = [i['Q'].replace(" ","").replace("\\n", '').replace('\n', '').replace('\t', '').replace("\\",'').replace('▲', '') for
-                    i in
-                    line['annotations']]
-        answer = [i['A'].replace(" ",'').replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace('▲', '') for i
-                  in
-                  line['annotations']]
+        text = line['text'].replace(" ", '').replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\',
+                                                                                                            '').replace(
+            '▲', '')
+        question = [
+            i['Q'].replace(" ", "").replace("\\n", '').replace('\n', '').replace('\t', '').replace("\\", '').replace(
+                '▲', '') for
+            i in
+            line['annotations']]
+        answer = [
+            i['A'].replace(" ", '').replace("\\n", '').replace('\n', '').replace('\t', '').replace('\\', '').replace(
+                '▲', '') for i
+            in
+            line['annotations']]
         tk = []
         for i in range(len(question)):
-            tk.append((text + '[SEP]' + answer[i], question[i]))
+            tk.append((text, answer[i], question[i]))
 
         return tk
 
