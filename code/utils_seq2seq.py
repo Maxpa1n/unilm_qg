@@ -452,7 +452,7 @@ class Seq2SeqDataset(torch.utils.data.Dataset):
             line['annotations']]
         tk = []
         for i in range(len(question)):
-            tk.append((text, answer[i], question[i]))
+            tk.append((text,answer[i], question[i]))
 
         return tk
 
