@@ -364,7 +364,7 @@ def main():
         else:
             start_epoch = 1
         for i_epoch in trange(start_epoch, int(args.num_train_epochs)+1, desc="Epoch", disable=args.local_rank not in (-1, 0)):
-#             model.train()
+
             if args.local_rank != -1:
                 train_sampler.set_epoch(i_epoch)
             iter_bar = tqdm(train_dataloader, desc='Iter (loss=X.XXX)',
@@ -381,7 +381,7 @@ def main():
                 loss = masked_lm_loss
 
                 # logging for each step (i.e., before normalization by args.gradient_accumulation_steps)
-                iter_bar.set_description('Iter (loss=%5.3f)' % loss.item())
+                iter_bar.set_description('Iter (loss={:.2f}) (lr={:0.2e})'.format(loss.item(), scheduler.get_lr()[0]))
 
                 # ensure that accumlated gradients are normalized
                 if args.gradient_accumulation_steps > 1:
@@ -402,6 +402,50 @@ def main():
                     scheduler.step()  # Update learning rate schedule
                     optimizer.zero_grad()
                     global_step += 1
+
+                if global_step %100==0:
+                    # Save a trained model
+                    if (args.local_rank == -1 or torch.distributed.get_rank() == 0):
+                        logger.info(
+                            "** ** * Saving fine-tuned model and optimizer ** ** * ")
+                        model_to_save = model.module if hasattr(
+                            model, 'module') else model  # Only save the model it-self
+                        output_model_file = os.path.join(
+                            args.output_dir, "model.{0}.{0}.bin".format(i_epoch,global_step))
+                        torch.save(model_to_save.state_dict(), output_model_file)
+                        output_optim_file = os.path.join(
+                            args.output_dir, "optim.{0}.{0}.bin".format(i_epoch,global_step))
+                        torch.save(optimizer.state_dict(), output_optim_file)
+                        output_sched_file = os.path.join(
+                            args.output_dir, "sched.{0}.{0}.bin".format(i_epoch,global_step))
+                        torch.save(scheduler.state_dict(), output_sched_file)
+
+                        logger.info("***** CUDA.empty_cache() *****")
+                        torch.cuda.empty_cache()
+
+                    ###################################
+                    ###################################
+                    # 载入此轮保存的模型哦！！！！！！！！
+                    ###################################
+                    ###################################
+
+                    dev_iter_bangbang = tqdm(dev_dataloader, desc='Iter (loss=X.XXX)',
+                                             disable=args.local_rank not in (-1, 0))
+                    temp = []
+                    with torch.no_grad():
+                        for step, batch in enumerate(dev_iter_bangbang):
+                            batch = [
+                                t.to(device) if t is not None else None for t in batch]
+                            input_ids, segment_ids, input_mask, lm_label_ids, masked_pos, masked_weights, _ = batch
+                            masked_lm_loss = model(input_ids, segment_ids, input_mask, lm_label_ids,
+                                                   masked_pos=masked_pos, masked_weights=masked_weights)
+                            if n_gpu > 1:
+                                masked_lm_loss = masked_lm_loss.mean()
+                            dev_loss = masked_lm_loss
+                            bbb = dev_loss.cpu().detach().numpy()
+                            temp.append(bbb)
+                        dev_loss_fin = sum(temp) / step
+                        print('####   Dev loss：', dev_loss_fin)
 
             # Save a trained model
             if (args.local_rank == -1 or torch.distributed.get_rank() == 0):
@@ -426,21 +470,6 @@ def main():
                 logger.info("***** CUDA.empty_cache() *****")
                 torch.cuda.empty_cache()
 
-            ###################################
-            ###################################
-            # 载入此轮保存的模型哦！！！！！！！！
-            ###################################
-            ###################################
-#             temp_model_file = output_model_file
-#             model_recover1 = torch.load(temp_model_file)
-#             print('load temp model:',temp_model_file)
-#             model = model_class.from_pretrained(args.model_name_or_path, state_dict=model_recover1, config=config)
-#             del model_recover1
-#             model.to(device)
-#             if n_gpu > 1:
-#                 model = torch.nn.DataParallel(model)
-#             torch.cuda.empty_cache()
-#             model.eval()
 
             dev_iter_bangbang = tqdm(dev_dataloader, desc='Iter (loss=X.XXX)',
                                  disable=args.local_rank not in (-1, 0))
