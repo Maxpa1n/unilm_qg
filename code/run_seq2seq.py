@@ -445,7 +445,7 @@ def main():
                             bbb = dev_loss.cpu().detach().numpy()
                             temp.append(bbb)
                         dev_loss_fin = sum(temp) / step
-                        print('####   Dev loss：', dev_loss_fin)
+                        print('####   Dev loss：', dev_loss_fin,output_model_file)
 
             # Save a trained model
             if (args.local_rank == -1 or torch.distributed.get_rank() == 0):
@@ -488,7 +488,7 @@ def main():
                     bbb = dev_loss.cpu().detach().numpy()
                     temp.append(bbb)
                 dev_loss_fin = sum(temp) / step
-                print('####   Dev loss：', dev_loss_fin)
+                print('####   Dev loss：', dev_loss_fin, output_model_file)
 
 
 if __name__ == "__main__":
