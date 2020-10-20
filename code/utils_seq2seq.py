@@ -392,8 +392,8 @@ class Seq2SeqDataset(torch.utils.data.Dataset):
         for i in data_list:
             for j in i:
                 text, answer, question = j
-                self.ex_list.append((text, answer, question))
-                # self.ex_list.append(sentence_split(text, question, answer))
+                #self.ex_list.append((text+'[SEP]'+ answer, question))
+                self.ex_list.append(sentence_split(text, question, answer))
         print('Load {0} documents'.format(len(self.ex_list)))
 
 
@@ -420,7 +420,7 @@ class Seq2SeqDataset(torch.utils.data.Dataset):
             line['annotations']]
         tk = []
         for i in range(len(question)):
-            tk.append((text, answer[i], question[i]))
+            tk.append((text,answer[i], question[i]))
 
         return tk
 
