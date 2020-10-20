@@ -81,6 +81,36 @@ def sentence_split_1(text, answer):
             first_and_text += j
     return first_and_text + '[SEP]' + answer
 
+def sentence_split_full(text, answer):
+    wordlist = re.split(r'([。；？！：])', text)
+    wordlist = ["".join(i) for i in zip(wordlist[0::2], wordlist[1::2])]
+    lenth = len(wordlist)
+    if len(wordlist) <= 5:
+        return text + '[SEP]' + answer
+    first_and_text = []
+    window = [0, 1, 2, lenth - 3, lenth - 2, lenth - 1]
+    for k, j in enumerate(wordlist):
+        if answer in j or j in answer:
+            if k not in window:
+                start = k - 2
+                end = k + 2
+                for s in wordlist[start - 1:end]:
+                    if s not in first_and_text:
+                        first_and_text.append(s)
+            elif k in window[:3]:
+                for s in wordlist[:5]:
+                    if s not in first_and_text:
+                        first_and_text.append(s)
+
+            elif k in window[3:]:
+                for s in wordlist[-5:]:
+                    if s not in first_and_text:
+                        first_and_text.append(s)
+            else:
+                pass
+    fi = ''.join(first_and_text)
+    return fi + '[SEP]' + answer
+
 
 def sentence_split(text, answer):
     wordlist = re.split(r'([。；？！：])', text)
@@ -251,7 +281,7 @@ def decode_main():
                     in
                     line['annotations']]
                 for a in answer:
-                    input_lines.append(sentence_split(text, a))
+                    input_lines.append(sentence_split_full(text, a))
 
             if args.subset > 0:
                 logger.info("Decoding subset: %d", args.subset)
