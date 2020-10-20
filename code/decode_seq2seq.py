@@ -252,6 +252,7 @@ def decode_main():
                     line['annotations']]
                 for a in answer:
                     input_lines.append(sentence_split(text, a))
+                    #input_lines.append(text+'[SEP]'+a)
 
             if args.subset > 0:
                 logger.info("Decoding subset: %d", args.subset)
