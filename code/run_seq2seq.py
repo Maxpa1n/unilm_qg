@@ -367,7 +367,7 @@ def main():
 
             if args.local_rank != -1:
                 train_sampler.set_epoch(i_epoch)
-            iter_bar = tqdm(train_dataloader, desc='Iter (loss=X.XXX)',
+            iter_bar = tqdm(train_dataloader, desc='Iter (loss=X.XXX)(lr=X.XXXX)',
                             disable=args.local_rank not in (-1, 0))
             for step, batch in enumerate(iter_bar):
                 batch = [
@@ -381,7 +381,7 @@ def main():
                 loss = masked_lm_loss
 
                 # logging for each step (i.e., before normalization by args.gradient_accumulation_steps)
-                iter_bar.set_description('Iter (loss={:.2f}) (lr={:0.2e})'.format(loss.item(), scheduler.get_lr()[0]))
+                iter_bar.set_description('Iter (loss={:.2f})(lr={:0.2e})'.format(loss.item(), scheduler.get_lr()[0]))
 
                 # ensure that accumlated gradients are normalized
                 if args.gradient_accumulation_steps > 1:
@@ -403,21 +403,21 @@ def main():
                     optimizer.zero_grad()
                     global_step += 1
 
-                if global_step %100==0:
+                if step %100==0:
                     # Save a trained model
                     if (args.local_rank == -1 or torch.distributed.get_rank() == 0):
                         logger.info(
-                            "** ** * Saving fine-tuned model and optimizer ** ** * ")
+                            "** ** * Saving fine-tuned model and optimizer  :step{}** ** * ".format(step))
                         model_to_save = model.module if hasattr(
                             model, 'module') else model  # Only save the model it-self
                         output_model_file = os.path.join(
-                            args.output_dir, "model.{0}.{0}.bin".format(i_epoch,global_step))
+                            args.output_dir, "model.{}.{}.bin".format(i_epoch,step))
                         torch.save(model_to_save.state_dict(), output_model_file)
                         output_optim_file = os.path.join(
-                            args.output_dir, "optim.{0}.{0}.bin".format(i_epoch,global_step))
+                            args.output_dir, "optim.{}.{}.bin".format(i_epoch,step))
                         torch.save(optimizer.state_dict(), output_optim_file)
                         output_sched_file = os.path.join(
-                            args.output_dir, "sched.{0}.{0}.bin".format(i_epoch,global_step))
+                            args.output_dir, "sched.{}.{}.bin".format(i_epoch,step))
                         torch.save(scheduler.state_dict(), output_sched_file)
 
                         logger.info("***** CUDA.empty_cache() *****")
@@ -429,11 +429,10 @@ def main():
                     ###################################
                     ###################################
 
-                    dev_iter_bangbang = tqdm(dev_dataloader, desc='Iter (loss=X.XXX)',
-                                             disable=args.local_rank not in (-1, 0))
+                    #dev_iter_bangbang1 = tqdm(dev_dataloader,disable=args.local_rank not in (-1, 0))
                     temp = []
                     with torch.no_grad():
-                        for step, batch in enumerate(dev_iter_bangbang):
+                        for step, batch in enumerate(dev_dataloader):
                             batch = [
                                 t.to(device) if t is not None else None for t in batch]
                             input_ids, segment_ids, input_mask, lm_label_ids, masked_pos, masked_weights, _ = batch
@@ -471,11 +470,11 @@ def main():
                 torch.cuda.empty_cache()
 
 
-            dev_iter_bangbang = tqdm(dev_dataloader, desc='Iter (loss=X.XXX)',
-                                 disable=args.local_rank not in (-1, 0))
+            #dev_iter_bangbang = tqdm(dev_dataloader, desc='Iter (loss=X.XXX)',
+            #                     disable=args.local_rank not in (-1, 0))
             temp = []
             with torch.no_grad():
-                for step, batch in enumerate(dev_iter_bangbang):
+                for step, batch in enumerate(dev_dataloader):
                     batch = [
                         t.to(device) if t is not None else None for t in batch]
                     input_ids, segment_ids, input_mask, lm_label_ids, masked_pos, masked_weights, _ = batch
