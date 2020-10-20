@@ -24,6 +24,18 @@ def sentence_split_1(text, question, answer):
     return first_and_text + '[SEP]' + answer, question
 
 
+def sentence_split_full(text, question, answer):
+    wordlist = re.split(r'([。；？！：])', text)
+    wordlist = ["".join(i) for i in zip(wordlist[0::2], wordlist[1::2])]
+    first_and_text = [wordlist[0]]
+    sentence_index = [(0, len(wordlist[0]))]
+    for k, j in enumerate(wordlist):
+        if k == 0 or answer in j or j in answer:
+            sentence_index.append((k, len(j)))
+
+    pass
+
+
 def sentence_split(text, question, answer):
     wordlist = re.split(r'([。；？！：])', text)
     wordlist = ["".join(i) for i in zip(wordlist[0::2], wordlist[1::2])]
@@ -260,12 +272,12 @@ class Pipeline():
 
 def truncate_paragraph(tokens):
     sep_index = tokens.index('[SEP]')
-    sentence_a, sentence_b = tokens[:sep_index], tokens[sep_index:]
-    if len(sentence_a) > len(sentence_b):
-        sentence_a = sentence_a[:-1]
+    text, answer = tokens[:sep_index], tokens[sep_index:]
+    if len(text) > len(answer):
+        text = text[:-1]
     else:
-        sentence_b = sentence_b[:-1]
-    tokens = sentence_a + sentence_b
+        answer = answer[:-1]
+    tokens = text + answer
     return tokens
 
 
@@ -395,7 +407,6 @@ class Seq2SeqDataset(torch.utils.data.Dataset):
                 #self.ex_list.append((text+'[SEP]'+ answer, question))
                 self.ex_list.append(sentence_split(text, question, answer))
         print('Load {0} documents'.format(len(self.ex_list)))
-
 
     def read_data(self, line, tokenizer):
         # sample = eval(line.strip())
