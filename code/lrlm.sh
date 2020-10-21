@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=2,3,4,5  \
+CUDA_VISIBLE_DEVICES=0,1,2,3  \
 python -u run_maskLeftRightLM.py --data_dir ../data   \
         --src_file LR_dataset.json   \
         --model_type unilm  \
@@ -9,14 +9,14 @@ python -u run_maskLeftRightLM.py --data_dir ../data   \
         --max_position_embeddings 512   \
         --do_train \
         --do_lower_case  \
-        --train_batch_size 32   \
+        --train_batch_size 45   \
         --model_recover_path ../user_data/pretrain/pytorch_model.bin \
-	--mask_prob 0.4 \
+	--mask_prob 0.5 \
 	--mask_source_words \
-	--skipgram_size 4 \
-	--skipgram_prb 0.2 \
-	--warmup_proportion 0.05 \
-        --num_train_epochs 30  \
-        --mask_prob 0.5 \
-        --max_pred 40 \
-        --learning_rate 5e-5
+	--skipgram_size 6 \
+	--skipgram_prb 0.25 \
+	--warmup_proportion 0.01 \
+        --num_train_epochs 40  \
+        --max_pred 30 \
+	--mask_whole_word \
+        --learning_rate 6e-5
