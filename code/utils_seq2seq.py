@@ -393,8 +393,9 @@ class LRDataset(torch.utils.data.Dataset):
 
         for i in data_list:
             text, answer = i
-
-            self.ex_list.append(sentence_split_ta_full(text, answer))
+            text_answer = sentence_split_ta_full(text,answer)
+            print(text_answer)
+            self.ex_list.append(text_answer)
         print('Load {0} documents'.format(len(self.ex_list)))
         # exit()
 
@@ -795,7 +796,7 @@ class Preprocess4RightLM(Pipeline):
 
     def __call__(self, instance):
         next_sentence_label = None
-        tokens_a, _ = instance[:2]
+        tokens_a = instance
         tokens_a = self.tokenizer.tokenize(tokens_a)
         tokens_a = truncate_tokens_signle(tokens_a, self.max_len)
         # Add Special Tokens
@@ -930,7 +931,7 @@ class Preprocess4LeftLM(Pipeline):
 
     def __call__(self, instance):
         next_sentence_label = None
-        tokens_a, _ = instance[:2]
+        tokens_a = instance
 
         tokens_a = self.tokenizer.tokenize(tokens_a)
         tokens_a = truncate_tokens_signle(tokens_a, self.max_len)

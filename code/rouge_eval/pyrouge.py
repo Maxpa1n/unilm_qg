@@ -1,7 +1,7 @@
 # coding:utf8
 from rouge import Rouge
 import json
-with open('../../data/split_data/test_2.json','r',encoding='utf8') as f_t:
+with open('../../data/split_data/test_1.json','r',encoding='utf8') as f_t:
     tgt_json = json.load(f_t)
     question = []
     answer = []

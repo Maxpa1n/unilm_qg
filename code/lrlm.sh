@@ -9,14 +9,14 @@ python -u run_maskLeftRightLM.py --data_dir ../data   \
         --max_position_embeddings 512   \
         --do_train \
         --do_lower_case  \
-        --train_batch_size 45   \
+        --train_batch_size 38   \
         --model_recover_path ../user_data/pretrain/pytorch_model.bin \
-	--mask_prob 0.5 \
+	--mask_prob 0.4 \
 	--mask_source_words \
-	--skipgram_size 6 \
-	--skipgram_prb 0.25 \
 	--warmup_proportion 0.01 \
         --num_train_epochs 40  \
+	--skipgram_size 4 \
+	--skipgram_prb 0.25 \
         --max_pred 30 \
 	--mask_whole_word \
-        --learning_rate 6e-5
+        --learning_rate 3e-5
